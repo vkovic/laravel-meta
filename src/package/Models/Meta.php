@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Meta extends Model
 {
-    protected $guarded = ['id'];
+    protected $guarded = [];
+
+    protected $primaryKey = null;
+
+    public $incrementing = false;
 
     /**
      * Set table name dynamically

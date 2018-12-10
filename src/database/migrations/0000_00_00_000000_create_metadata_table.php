@@ -14,7 +14,6 @@ class CreateMetaDataTable extends Migration
     public function up()
     {
         Schema::create(config('laravel-meta.table_name'), function (Blueprint $table) {
-            $table->increments('id');
             $table->string('realm', 128);
             $table->string('metable_type', 128)->default('');
             $table->string('metable_id', 128)->default('');
