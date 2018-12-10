@@ -19,10 +19,8 @@ class MetaHandler
      */
     public function set($key, $value, $realm = null, $metableType = '', $metableId = '')
     {
-        $realm = $realm ?? config('laravel-meta.default_realm');
-
         Meta::updateOrCreate([
-            'realm' => $realm,
+            'realm' => $this->resolveRealm($realm),
             'metable_type' => $metableType,
             'metable_id' => $metableId,
             'key' => $key,
@@ -44,9 +42,7 @@ class MetaHandler
      */
     public function get($key, $default = null, $realm = null, $metableType = '', $metableId = '')
     {
-        $realm = $realm ?? config('laravel-meta.default_realm');
-
-        $meta = Meta::filter($realm, $metableType, $metableId)
+        $meta = Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
             ->where('key', $key)
             ->first();
 
@@ -66,9 +62,7 @@ class MetaHandler
      */
     public function exists($key, $realm = null, $metableType = '', $metableId = '')
     {
-        $realm = $realm ?? config('laravel-meta.default_realm');
-
-        return Meta::filter($realm, $metableType, $metableId)
+        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
             ->where('key', $key)
             ->exists();
     }
@@ -84,9 +78,7 @@ class MetaHandler
      */
     public function count($realm = null, $metableType = '', $metableId = '')
     {
-        $realm = $realm ?? config('laravel-meta.default_realm');
-
-        return Meta::filter($realm, $metableType, $metableId)
+        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
             ->count();
     }
 
@@ -104,9 +96,7 @@ class MetaHandler
      */
     public function all($realm = null, $metableType = '', $metableId = '')
     {
-        $realm = $realm ?? config('laravel-meta.default_realm');
-
-        return Meta::filter($realm, $metableType, $metableId)
+        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
             ->pluck('value', 'key')
             ->toArray();
     }
@@ -124,9 +114,7 @@ class MetaHandler
      */
     public function keys($realm = null, $metableType = '', $metableId = '')
     {
-        $realm = $realm ?? config('laravel-meta.default_realm');
-
-        return Meta::filter($realm, $metableType, $metableId)
+        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
             ->pluck('key')
             ->toArray();
     }
@@ -143,9 +131,7 @@ class MetaHandler
      */
     public function remove($key, $realm = null, $metableType = '', $metableId = '')
     {
-        $realm = $realm ?? config('laravel-meta.default_realm');
-
-        Meta::filter($realm, $metableType, $metableId)
+        Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
             ->where('key', $key)
             ->delete();
     }
@@ -163,8 +149,19 @@ class MetaHandler
      */
     public function purge($realm = null, $metableType = '', $metableId = '')
     {
-        $realm = $realm ?? config('laravel-meta.default_realm');
+        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)->delete();
+    }
 
-        return Meta::filter($realm, $metableType, $metableId)->delete();
+    /**
+     * Return default realm if null is passed,
+     * or $realm otherwise
+     *
+     * @param $realm
+     *
+     * @return mixed
+     */
+    protected function resolveRealm($realm)
+    {
+        return $realm ?? config('laravel-meta.default_realm');;
     }
 }

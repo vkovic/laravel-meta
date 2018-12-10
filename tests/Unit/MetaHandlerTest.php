@@ -62,6 +62,19 @@ class MetaHandlerTest extends TestCase
         $meta->set($key, $value);
 
         $this->assertEquals($value, $meta->get($key));
+        $this->assertNull($meta->get('nonExistingKey'));
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_return_default_value_when_key_not_exist()
+    {
+        $meta = new MetaHandler;
+
+        $default = str_random();
+
+        $this->assertEquals($default, $meta->get('nonExistingKey', $default));
     }
 
     /**
