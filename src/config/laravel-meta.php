@@ -2,5 +2,5 @@
 
 return [
     'table_name' => 'metadata',
-    'default_realm' => 'global'
+    'default_realm' => 'default'
 ];

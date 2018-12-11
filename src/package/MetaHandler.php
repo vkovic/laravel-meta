@@ -7,7 +7,8 @@ use Vkovic\LaravelMeta\Models\Meta;
 class MetaHandler
 {
     /**
-     * Set meta at given key
+     * Set meta at given key.
+     * If value exists, it'll be overwritten
      *
      * @param string $key
      * @param mixed  $value
@@ -17,14 +18,67 @@ class MetaHandler
      *
      * @throws \Exception
      */
-    public function set($key, $value, $realm = null, $metableType = '', $metableId = '')
+    public function set($key, $value, $type = 'string', $realm = null, $metableType = '', $metableId = '')
     {
-        Meta::updateOrCreate([
-            'realm' => $this->resolveRealm($realm),
-            'metable_type' => $metableType,
-            'metable_id' => $metableId,
-            'key' => $key,
-        ], ['key' => $key, 'value' => $value]);
+        $meta = Meta::filter($realm, $metableType, $metableId, $key)
+            ->first();
+
+        if ($meta === null) {
+            $meta = new Meta;
+            $meta->key = $key;
+        }
+
+        $meta->value = $value;
+        $meta->type = $type;
+        $meta->realm = $realm;
+        $meta->metable_type = $metableType;
+        $meta->metable_id = $metableId;
+
+        $meta->save();
+    }
+
+    public function create($key, $value, $type = 'string', $realm = null, $metableType = '', $metableId = '')
+    {
+        $exists = Meta::filter($realm, $metableType, $metableId, $key)
+            ->exists();
+
+        if ($exists) {
+            $message = "Can't create meta (key: $key). ";
+            $message .= "Meta already exists";
+            throw new \Exception($message);
+        }
+
+        $meta = new Meta;
+
+        $meta->key = $key;
+        $meta->type = $type;
+        $meta->value = $value;
+        $meta->realm = $realm;
+        $meta->metable_type = $metableType;
+        $meta->metable_id = $metableId;
+
+        $meta->save();
+    }
+
+    public function update($key, $value, $type = 'string', $realm = null, $metableType = '', $metableId = '')
+    {
+        try {
+            $meta = Meta::filter($realm, $metableType, $metableId, $key)
+                ->firstOrFail();
+        } catch (\Exception $e) {
+            $message = "Can't update meta (key: $key). ";
+            $message .= "Meta doesn't exist";
+
+            throw new \Exception($message);
+        }
+
+        $meta->type = $type;
+        $meta->value = $value;
+        $meta->realm = $realm;
+        $meta->metable_type = $metableType;
+        $meta->metable_id = $metableId;
+
+        $meta->save();
     }
 
     /**
@@ -42,11 +96,13 @@ class MetaHandler
      */
     public function get($key, $default = null, $realm = null, $metableType = '', $metableId = '')
     {
-        $meta = Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
+        $meta = Meta::filter($realm, $metableType, $metableId)
             ->where('key', $key)
             ->first();
 
-        return optional($meta)->value ?: $default;
+        return $meta === null
+            ? $default
+            : $meta->value;
     }
 
     /**
@@ -62,7 +118,7 @@ class MetaHandler
      */
     public function exists($key, $realm = null, $metableType = '', $metableId = '')
     {
-        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
+        return Meta::filter($realm, $metableType, $metableId)
             ->where('key', $key)
             ->exists();
     }
@@ -78,7 +134,7 @@ class MetaHandler
      */
     public function count($realm = null, $metableType = '', $metableId = '')
     {
-        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
+        return Meta::filter($realm, $metableType, $metableId)
             ->count();
     }
 
@@ -96,9 +152,17 @@ class MetaHandler
      */
     public function all($realm = null, $metableType = '', $metableId = '')
     {
-        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
-            ->pluck('value', 'key')
-            ->toArray();
+        //$meta = Meta::filter($realm, $metableType, $metableId)->get();
+        $meta = Meta::filter($realm, $metableType, $metableId)
+            ->get(['key', 'value', 'type']);
+
+        $data = [];
+        foreach ($meta as $m) {
+            $data[$m->key] = $m->value;
+        }
+
+        return $data;
+
     }
 
     /**
@@ -114,13 +178,13 @@ class MetaHandler
      */
     public function keys($realm = null, $metableType = '', $metableId = '')
     {
-        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
+        return Meta::filter($realm, $metableType, $metableId)
             ->pluck('key')
             ->toArray();
     }
 
     /**
-     * Remove meta at given key
+     * Remove meta at given key or array of keys
      *
      * @param string $key
      * @param string $realm
@@ -131,8 +195,10 @@ class MetaHandler
      */
     public function remove($key, $realm = null, $metableType = '', $metableId = '')
     {
-        Meta::filter($this->resolveRealm($realm), $metableType, $metableId)
-            ->where('key', $key)
+        $keys = (array) $key;
+
+        Meta::filter($realm, $metableType, $metableId)
+            ->whereIn('key', $keys)
             ->delete();
     }
 
@@ -149,19 +215,6 @@ class MetaHandler
      */
     public function purge($realm = null, $metableType = '', $metableId = '')
     {
-        return Meta::filter($this->resolveRealm($realm), $metableType, $metableId)->delete();
-    }
-
-    /**
-     * Return default realm if null is passed,
-     * or $realm otherwise
-     *
-     * @param $realm
-     *
-     * @return mixed
-     */
-    protected function resolveRealm($realm)
-    {
-        return $realm ?? config('laravel-meta.default_realm');;
+        return Meta::filter($realm, $metableType, $metableId)->delete();
     }
 }

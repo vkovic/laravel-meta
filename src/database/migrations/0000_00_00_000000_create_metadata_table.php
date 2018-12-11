@@ -18,7 +18,8 @@ class CreateMetaDataTable extends Migration
             $table->string('metable_type', 128)->default('');
             $table->string('metable_id', 128)->default('');
             $table->string('key', 128);
-            $table->longText('value');
+            $table->longText('value')->nullable();
+            $table->string('type')->default('string'); // array, string, int, float, bool
 
             $table->timestamps();
 

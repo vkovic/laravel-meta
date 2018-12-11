@@ -1,6 +1,6 @@
 <?php
 
-namespace Vkovic\LaravelMeta\Test\Integration;
+namespace Vkovic\LaravelMeta\Test\Unit;
 
 use Vkovic\LaravelMeta\MetaHandler;
 use Vkovic\LaravelMeta\Test\TestCase;
@@ -8,67 +8,113 @@ use Vkovic\LaravelMeta\Test\TestCase;
 class MetaHandlerTest extends TestCase
 {
     /**
-     * @test
+     * Valid data provider for: key, value and type
+     *
+     * @return array
      */
-    public function it_can_set_meta()
+    public function validKeyValueTypeProvider()
+    {
+        return [
+            // key | value | type
+            [str_random(), str_random(), 'string'],
+            [str_random(), null, 'string'],
+            [str_random(), 1, 'int'],
+            [str_random(), 1.1, 'float'],
+            [str_random(), true, 'boolean'],
+            [str_random(), false, 'boolean'],
+            [str_random(), [], 'array'],
+            [str_random(), range(1, 1), 'array'],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider validKeyValueTypeProvider
+     */
+    public function it_can_set_and_get_meta($key, $value, $type)
     {
         $meta = new MetaHandler;
 
-        //
-        // Standard key value
-        //
+        $meta->set($key, $value, $type);
 
-        $key = str_random();
-        $value = str_random();
+        $this->assertSame($meta->get($key), $value);
+    }
 
-        $meta->set($key, $value);
+    /**
+     * @test
+     * @dataProvider validKeyValueTypeProvider
+     */
+    public function it_can_create_meta($key, $value, $type)
+    {
+        $meta = new MetaHandler;
 
-        $this->assertDatabaseHas($this->table, [
-            'key' => $key,
-            'value' => $value
-        ]);
+        $meta->set($key, $value, $type);
 
-        //
-        // Realm type and metable id
-        //
+        $meta->update($key, $value, $type);
 
-        $key = str_random();
-        $value = str_random();
-        $realm = str_random();
-        $metableType = str_random();
-        $metableId = str_random();
+        $this->assertSame($meta->get($key), $value);
+    }
 
-        $meta->set($key, $value, $realm, $metableType, $metableId);
+    /**
+     * @test
+     * @dataProvider validKeyValueTypeProvider
+     */
+    public function it_can_update_meta($key, $value, $type)
+    {
+        $meta = new MetaHandler;
 
-        $this->assertDatabaseHas($this->table, [
-            'key' => $key,
-            'value' => $value,
-            'realm' => $realm,
-            'metable_type' => $metableType,
-            'metable_id' => $metableId,
-        ]);
+        $meta->set($key, $value, $type);
+
+        //dd(\DB::table($this->table)->get());
+
+        $meta->update($key, $value, $type);
+
+        $this->assertSame($meta->get($key), $value);
     }
 
     /**
      * @test
      */
-    public function it_can_get_meta()
+    public function it_throws_exception_when_updating_non_existing_meta()
     {
+        $this->expectExceptionMessage("Can't update");
+
         $meta = new MetaHandler;
 
-        $key = str_random();
-        $value = str_random();
-
-        $meta->set($key, $value);
-
-        $this->assertEquals($value, $meta->get($key));
-        $this->assertNull($meta->get('nonExistingKey'));
+        $meta->update('unexistingKey', '');
     }
 
     /**
      * @test
      */
-    public function it_can_return_default_value_when_key_not_exist()
+    public function it_throws_exception_when_creating_same_meta()
+    {
+        $this->expectExceptionMessage("Can't create");
+
+        $meta = new MetaHandler;
+
+        $meta->set('foo', 'bar');
+
+        $meta->create('foo', '');
+    }
+
+    /**
+     * @test
+     * @dataProvider validKeyValueTypeProvider
+     */
+    public function it_can_set_and_get_meta_without_passing_type($key, $value, $unused)
+    {
+        $meta = new MetaHandler;
+
+        $meta->set($key, $value);
+
+        $this->assertEquals($meta->get($key), $value);
+    }
+
+    /**
+     * @test
+     */
+    public function it_will_return_default_value_when_key_not_exist()
     {
         $meta = new MetaHandler;
 
@@ -79,13 +125,11 @@ class MetaHandlerTest extends TestCase
 
     /**
      * @test
+     * @dataProvider validKeyValueTypeProvider
      */
-    public function it_can_check_meta_exists()
+    public function it_can_check_meta_exists($key, $value)
     {
         $meta = new MetaHandler;
-
-        $key = str_random();
-        $value = str_random();
 
         $meta->set($key, $value);
 
@@ -120,31 +164,6 @@ class MetaHandlerTest extends TestCase
         }
 
         $this->assertTrue($meta->count() === $count);
-
-        //
-        // Check count in custom realm
-        //
-
-        $count = rand(2, 10);
-        $realm = str_random();
-        for ($i = 0; $i < $count; $i++) {
-            $key = str_random();
-            $value = str_random();
-            $meta->set($key, $value, $realm);
-        }
-
-        $this->assertTrue($meta->count($realm) === $count);
-
-        //
-        // Check count in custom realm with metable type and id
-        //
-
-        $realm = str_random();
-        $metableType = str_random();
-        $metableId = str_random();
-        $meta->set(str_random(), str_random(), $realm, $metableType, $metableId);
-
-        $this->assertTrue($meta->count($realm, $metableType, $metableId) === 1);
     }
 
     /**
@@ -156,22 +175,18 @@ class MetaHandlerTest extends TestCase
 
         $meta = new MetaHandler;
 
-        $realm = str_random();
-        $metableType = str_random();
-        $metableId = str_random();
-
         $key1 = str_random();
         $value1 = str_random();
-        $meta->set($key1, $value1, $realm, $metableType, $metableId);
+        $meta->set($key1, $value1);
 
         $key2 = str_random();
         $value2 = str_random();
-        $meta->set($key2, $value2, $realm, $metableType, $metableId);
+        $meta->set($key2, $value2);
 
         $this->assertEquals([
             $key1 => $value1,
             $key2 => $value2,
-        ], $meta->all($realm, $metableType, $metableId));
+        ], $meta->all());
     }
 
 
@@ -203,8 +218,6 @@ class MetaHandlerTest extends TestCase
         foreach ($keysToSave as $keyToSave) {
             $this->assertContains($keyToSave, $metaKeys);
         }
-
-        // TODO: check keys when metable present
     }
 
     /**
@@ -223,8 +236,6 @@ class MetaHandlerTest extends TestCase
         $meta->remove($key);
 
         $this->assertEmpty($meta->all());
-
-        // TODO: check keys when metable present
     }
 
     /**
@@ -246,7 +257,5 @@ class MetaHandlerTest extends TestCase
         $meta->purge();
 
         $this->assertEmpty($meta->all());
-
-        // TODO: check keys when metable present
     }
 }
