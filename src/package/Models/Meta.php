@@ -11,6 +11,8 @@ class Meta extends Model
 
     protected $table = 'meta';
 
+    protected static $realm = 'vkovic/laravel-meta';
+
     protected $allowedTypes = [
         'null',
         'string',
@@ -49,13 +51,12 @@ class Meta extends Model
      * Filter meta by realm and order by meta key
      *
      * @param Builder $query
-     * @param string  $realm
      *
      * @return mixed
      */
-    public function scopeRealm(Builder $query, $realm)
+    public function scopeRealm(Builder $query)
     {
-        return $query->where(['realm' => $realm])->orderBy('key');
+        return $query->where(['realm' => static::$realm])->orderBy('key');
     }
 
     /**
@@ -127,5 +128,207 @@ class Meta extends Model
         } elseif ($type == 'bool' || $type == 'boolean') {
             return (bool) $value;
         }
+    }
+
+    /**
+     * Set meta at given key
+     * for package realm.
+     * If meta exists, it'll be overwritten.
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @param string $type
+     */
+    public static function setMeta($key, $value, $type = 'string')
+    {
+        $meta = static::realm()
+            ->where('key', $key)
+            ->first();
+
+        if ($meta === null) {
+            $meta = new static;
+            $meta->key = $key;
+        }
+
+        $meta->value = $value;
+        $meta->type = $type;
+        $meta->realm = static::$realm;
+
+        $meta->save();
+    }
+
+    /**
+     * Create meta at given key
+     * for package realm.
+     * If meta exists, exception will be thrown.
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @param string $type
+     *
+     * @throws \Exception
+     */
+    public static function createMeta($key, $value, $type = 'string')
+    {
+        $exists = static::realm()
+            ->where('key', $key)
+            ->exists();
+
+        if ($exists) {
+            $message = "Can't create meta (key: $key). ";
+            $message .= "Meta already exists";
+            throw new \Exception($message);
+        }
+
+        $meta = new static;
+
+        $meta->key = $key;
+        $meta->type = $type;
+        $meta->value = $value;
+        $meta->realm = static::$realm;
+
+        $meta->save();
+    }
+
+    /**
+     * Create meta at given key
+     * for package realm.
+     * If meta doesn't exists, exception will be thrown.
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @param string $type
+     *
+     * @throws \Exception
+     */
+    public static function updateMeta($key, $value, $type = 'string')
+    {
+        try {
+            $meta = static::realm()
+                ->where('key', $key)
+                ->firstOrFail();
+        } catch (\Exception $e) {
+            $message = "Can't update meta (key: $key). ";
+            $message .= "Meta doesn't exist";
+
+            throw new \Exception($message);
+        }
+
+        $meta->type = $type;
+        $meta->value = $value;
+        $meta->realm = static::$realm;
+
+        $meta->save();
+    }
+
+    /**
+     * Get meta at given key
+     * for package realm
+     *
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @return array
+     */
+    public static function getMeta($key, $default = null)
+    {
+        $meta = static::realm()
+            ->where('key', $key)
+            ->first();
+
+        return $meta === null
+            ? $default
+            : $meta->value;
+    }
+
+    /**
+     * Check if meta key record exists by given key
+     * for package realm
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    public static function metaExists($key)
+    {
+        return static::realm()
+            ->where('key', $key)
+            ->exists();
+    }
+
+    /**
+     * Count all meta
+     * for package realm
+     *
+     * @param string $realm
+     * @param string $metableType
+     * @param string $metableId
+     *
+     * @return int
+     */
+    public static function countMeta()
+    {
+        return static::realm()
+            ->count();
+    }
+
+
+    /**
+     * Get all meta
+     * for package realm
+     *
+     * @return array
+     */
+    public static function allMeta()
+    {
+        $meta = static::realm()
+            ->get(['key', 'value', 'type']);
+
+        $data = [];
+        foreach ($meta as $m) {
+            $data[$m->key] = $m->value;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get all meta keys
+     * for package realm
+     *
+     * @return array
+     */
+    public static function metaKeys()
+    {
+        return static::realm()
+            ->pluck('key')
+            ->toArray();
+    }
+
+    /**
+     * Remove meta at given key or array of keys
+     * for package realm
+     *
+     * @param string|array $key
+     */
+    public static function removeMeta($key)
+    {
+        $keys = (array) $key;
+
+        static::realm()
+            ->whereIn('key', $keys)
+            ->delete();
+    }
+
+    /**
+     * Purge meta
+     * for package realm
+     *
+     * @return int Number of records deleted
+     */
+    public static function purgeMeta()
+    {
+        return static::realm()
+            ->delete();
     }
 }

@@ -9,13 +9,6 @@ use Vkovic\LaravelMeta\Providers\LaravelMetaServiceProvider;
 class TestCase extends OrchestraTestCase
 {
     /**
-     * Default realm
-     *
-     * @var string
-     */
-    protected $realm;
-
-    /**
      * Setup the test environment.
      *
      * @throws \Exception
