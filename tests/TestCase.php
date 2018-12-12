@@ -9,13 +9,6 @@ use Vkovic\LaravelMeta\Providers\LaravelMetaServiceProvider;
 class TestCase extends OrchestraTestCase
 {
     /**
-     * Default table
-     *
-     * @var string
-     */
-    protected $table;
-
-    /**
      * Default realm
      *
      * @var string
@@ -32,10 +25,6 @@ class TestCase extends OrchestraTestCase
     public function setUp()
     {
         parent::setUp();
-
-        // Retrieve table and default realm name for later use
-        $this->table = config('laravel-meta.table_name');
-        $this->realm = config('laravel-meta.realm');
 
         $this->packageMigrations();
     }

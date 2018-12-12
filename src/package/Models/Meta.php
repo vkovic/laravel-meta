@@ -2,59 +2,42 @@
 
 namespace Vkovic\LaravelMeta\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Meta extends Model
 {
-    protected $guarded = [];
+    protected $guarded = ['id'];
 
-    protected $primaryKey = null;
-
-    public $incrementing = false;
+    protected $table = 'meta';
 
     protected $allowedTypes = [
-        'array',
+        'null',
         'string',
         'int', 'integer',
         'float', 'double', 'real',
-        'bool', 'boolean'
+        'bool', 'boolean',
+        'array',
     ];
-
-    /**
-     * Set table name dynamically
-     *
-     * @return string
-     */
-    public function getTable()
-    {
-        return config('laravel-meta.table_name');
-    }
 
     public static function boot()
     {
         parent::boot();
 
         static::saving(function (Meta $model) {
-            // Realm
-            if (is_null($model->realm)) {
-                $model->realm = config('laravel-meta.default_realm');
-            }
-
-            // Default type is string
-            $type = 'string';
             $value = $model->attributes['value'];
+            $type = $model->attributes['type'];
 
             // Force type and convert attribute
             // in case of array and bool
-            if (is_array($model->attributes['value'])) {
+            if (is_array($value)) {
                 $type = 'array';
-                $value = json_encode($model->attributes['value']);
-            } elseif (is_bool($model->attributes['value'])) {
+                $value = json_encode($value);
+            } elseif (is_bool($value)) {
                 $type = 'bool';
-                $value = $model->attributes['value'] === true ? '1' : '0';
-            } else {
-                $type = $model->attributes['type'];
-                $value = $model->attributes['value'];
+                $value = $value === true ? '1' : '0';
+            } elseif ($value === null) {
+                $type = 'null';
             }
 
             $model->attributes['type'] = $type;
@@ -63,31 +46,25 @@ class Meta extends Model
     }
 
     /**
-     * Filter meta by standard values (realm, type, id and optionally key),
-     * and order by meta key
+     * Filter meta by realm and order by meta key
      *
-     * @param        $queryBuilder
-     * @param null   $realm
-     * @param string $metableType
-     * @param string $metableId
+     * @param Builder $query
+     * @param string  $realm
      *
      * @return mixed
      */
-    public function scopeFilter($queryBuilder, $realm, $metableType, $metableId, $key = null)
+    public function scopeRealm(Builder $query, $realm)
     {
-        $query = [
-            'realm' => $realm ?? config('laravel-meta.default_realm'),
-            'metable_type' => $metableType,
-            'metable_id' => $metableId,
-        ];
-
-        if ($key !== null) {
-            $query['key'] = $key;
-        }
-
-        return $queryBuilder->where($query)->orderBy('key');
+        return $query->where(['realm' => $realm])->orderBy('key');
     }
 
+    /**
+     * Key setter
+     *
+     * @param $value
+     *
+     * @throws \Exception
+     */
     public function setKeyAttribute($value)
     {
         // Key must be either integer or string
@@ -105,6 +82,13 @@ class Meta extends Model
         $this->attributes['key'] = $value;
     }
 
+    /**
+     * Type setter
+     *
+     * @param $value
+     *
+     * @throws \Exception
+     */
     public function setTypeAttribute($value)
     {
         if (!in_array($value, $this->allowedTypes)) {
@@ -115,24 +99,24 @@ class Meta extends Model
 
             $message = "Invalid type $value . Allowed types: ";
             $message .= implode(', ', $this->allowedTypes);
-            throw new \InvalidArgumentException($message);
+            throw new \Exception($message);
         }
 
         $this->attributes['type'] = $value;
     }
 
     /**
-     * Getter for "value" field
+     * Value getter
      *
      * @param $value
      *
-     * @return array|string
+     * @return float|array|string
      */
     public function getValueAttribute($value)
     {
         $type = $this->attributes['type'];
 
-        if ($type == 'string') {
+        if ($type == 'string' || $type == 'null') {
             return $value;
         } elseif ($type == 'array') {
             return json_decode($value, true);
@@ -143,15 +127,5 @@ class Meta extends Model
         } elseif ($type == 'bool' || $type == 'boolean') {
             return (bool) $value;
         }
-    }
-
-    /**
-     * Validate cast type
-     *
-     * @param $type
-     */
-    protected function checkType($type)
-    {
-
     }
 }

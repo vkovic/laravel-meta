@@ -7,20 +7,24 @@ use Vkovic\LaravelMeta\Models\Meta;
 class MetaHandler
 {
     /**
+     * Package realm
+     *
+     * @var string
+     */
+    protected $realm = 'vkovic/laravel-meta';
+
+    /**
      * Set meta at given key.
-     * If value exists, it'll be overwritten
+     * If meta exists, it'll be overwritten.
      *
      * @param string $key
      * @param mixed  $value
-     * @param string $realm
-     * @param string $metableType
-     * @param string $metableId
-     *
-     * @throws \Exception
+     * @param string $type
      */
-    public function set($key, $value, $type = 'string', $realm = null, $metableType = '', $metableId = '')
+    public function set($key, $value, $type = 'string')
     {
-        $meta = Meta::filter($realm, $metableType, $metableId, $key)
+        $meta = Meta::realm($this->realm)
+            ->where('key', $key)
             ->first();
 
         if ($meta === null) {
@@ -30,16 +34,25 @@ class MetaHandler
 
         $meta->value = $value;
         $meta->type = $type;
-        $meta->realm = $realm;
-        $meta->metable_type = $metableType;
-        $meta->metable_id = $metableId;
+        $meta->realm = $this->realm;
 
         $meta->save();
     }
 
-    public function create($key, $value, $type = 'string', $realm = null, $metableType = '', $metableId = '')
+    /**
+     * Create meta at given key.
+     * If meta exists, exception will be thrown.
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @param string $type
+     *
+     * @throws \Exception
+     */
+    public function create($key, $value, $type = 'string')
     {
-        $exists = Meta::filter($realm, $metableType, $metableId, $key)
+        $exists = Meta::realm($this->realm)
+            ->where('key', $key)
             ->exists();
 
         if ($exists) {
@@ -53,17 +66,26 @@ class MetaHandler
         $meta->key = $key;
         $meta->type = $type;
         $meta->value = $value;
-        $meta->realm = $realm;
-        $meta->metable_type = $metableType;
-        $meta->metable_id = $metableId;
+        $meta->realm = $this->realm;
 
         $meta->save();
     }
 
-    public function update($key, $value, $type = 'string', $realm = null, $metableType = '', $metableId = '')
+    /**
+     * Create meta at given key.
+     * If meta doesn't exists, exception will be thrown.
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @param string $type
+     *
+     * @throws \Exception
+     */
+    public function update($key, $value, $type = 'string')
     {
         try {
-            $meta = Meta::filter($realm, $metableType, $metableId, $key)
+            $meta = Meta::realm($this->realm)
+                ->where('key', $key)
                 ->firstOrFail();
         } catch (\Exception $e) {
             $message = "Can't update meta (key: $key). ";
@@ -74,9 +96,7 @@ class MetaHandler
 
         $meta->type = $type;
         $meta->value = $value;
-        $meta->realm = $realm;
-        $meta->metable_type = $metableType;
-        $meta->metable_id = $metableId;
+        $meta->realm = $this->realm;
 
         $meta->save();
     }
@@ -90,13 +110,11 @@ class MetaHandler
      * @param string $metableType
      * @param string $metableId
      *
-     * @throws \Exception
-     *
      * @return array
      */
-    public function get($key, $default = null, $realm = null, $metableType = '', $metableId = '')
+    public function get($key, $default = null)
     {
-        $meta = Meta::filter($realm, $metableType, $metableId)
+        $meta = Meta::realm($this->realm)
             ->where('key', $key)
             ->first();
 
@@ -116,44 +134,37 @@ class MetaHandler
      *
      * @return bool
      */
-    public function exists($key, $realm = null, $metableType = '', $metableId = '')
+    public function exists($key)
     {
-        return Meta::filter($realm, $metableType, $metableId)
+        return Meta::realm($this->realm)
             ->where('key', $key)
             ->exists();
     }
 
     /**
-     * Count all meta for specified realm, type and id
+     * Count all meta for specified realm
      *
      * @param string $realm
      * @param string $metableType
      * @param string $metableId
      *
-     * @return bool
+     * @return int
      */
-    public function count($realm = null, $metableType = '', $metableId = '')
+    public function count()
     {
-        return Meta::filter($realm, $metableType, $metableId)
+        return Meta::realm($this->realm)
             ->count();
     }
 
 
     /**
-     * Get all meta
-     *
-     * @param string $realm
-     * @param string $metableType
-     * @param string $metableId
-     *
-     * @throws \Exception
+     * Get all meta for package realm
      *
      * @return array
      */
-    public function all($realm = null, $metableType = '', $metableId = '')
+    public function all()
     {
-        //$meta = Meta::filter($realm, $metableType, $metableId)->get();
-        $meta = Meta::filter($realm, $metableType, $metableId)
+        $meta = Meta::realm($this->realm)
             ->get(['key', 'value', 'type']);
 
         $data = [];
@@ -162,23 +173,16 @@ class MetaHandler
         }
 
         return $data;
-
     }
 
     /**
-     * Get all meta keys
-     *
-     * @param string $realm
-     * @param string $metableType
-     * @param string $metableId
-     *
-     * @throws \Exception
+     * Get all meta keys for package realm
      *
      * @return array
      */
-    public function keys($realm = null, $metableType = '', $metableId = '')
+    public function keys()
     {
-        return Meta::filter($realm, $metableType, $metableId)
+        return Meta::realm($this->realm)
             ->pluck('key')
             ->toArray();
     }
@@ -186,35 +190,27 @@ class MetaHandler
     /**
      * Remove meta at given key or array of keys
      *
-     * @param string $key
-     * @param string $realm
-     * @param string $metableType
-     * @param string $metableId
-     *
-     * @throws \Exception
+     * @param string|array $key
      */
-    public function remove($key, $realm = null, $metableType = '', $metableId = '')
+    public function remove($key)
     {
         $keys = (array) $key;
 
-        Meta::filter($realm, $metableType, $metableId)
+        Meta::realm($this->realm)
             ->whereIn('key', $keys)
             ->delete();
     }
 
     /**
-     * Purge meta
-     *
-     * @param string $realm
-     * @param string $metableType
-     * @param string $metableId
+     * Purge meta in package realm
      *
      * @return int Number of records deleted
      *
      * @throws \Exception
      */
-    public function purge($realm = null, $metableType = '', $metableId = '')
+    public function purge()
     {
-        return Meta::filter($realm, $metableType, $metableId)->delete();
+        return Meta::realm($this->realm)
+            ->delete();
     }
 }

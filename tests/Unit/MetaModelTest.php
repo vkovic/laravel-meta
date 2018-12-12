@@ -52,7 +52,7 @@ class MetaModelTest extends TestCase
 
         $meta->save();
 
-        $this->assertDatabaseHas($this->table, [
+        $this->assertDatabaseHas((new Meta)->getTable(), [
             'key' => $key
         ]);
     }

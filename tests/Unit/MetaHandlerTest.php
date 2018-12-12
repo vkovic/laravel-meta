@@ -3,6 +3,7 @@
 namespace Vkovic\LaravelMeta\Test\Unit;
 
 use Vkovic\LaravelMeta\MetaHandler;
+use Vkovic\LaravelMeta\Models\Meta;
 use Vkovic\LaravelMeta\Test\TestCase;
 
 class MetaHandlerTest extends TestCase
@@ -12,62 +13,76 @@ class MetaHandlerTest extends TestCase
      *
      * @return array
      */
-    public function validKeyValueTypeProvider()
+    public function keyValueTypeProvider()
     {
         return [
             // key | value | type
+            [str_random(), str_random()],
             [str_random(), str_random(), 'string'],
-            [str_random(), null, 'string'],
+            [str_random(), null],
+            [str_random(), null, 'null'],
             [str_random(), 1, 'int'],
             [str_random(), 1.1, 'float'],
             [str_random(), true, 'boolean'],
             [str_random(), false, 'boolean'],
+            [str_random(), []],
             [str_random(), [], 'array'],
-            [str_random(), range(1, 1), 'array'],
+            [str_random(), range(1, 10)],
+            [str_random(), range(1, 10), 'array'],
         ];
     }
 
     /**
      * @test
-     * @dataProvider validKeyValueTypeProvider
+     * @dataProvider keyValueTypeProvider
      */
-    public function it_can_set_and_get_meta($key, $value, $type)
+    public function it_can_set_and_get_meta($key, $value, $type = null)
     {
         $meta = new MetaHandler;
 
-        $meta->set($key, $value, $type);
+        if ($type === null) {
+            $meta->set($key, $value);
+        } else {
+            $meta->set($key, $value, $type);
+        }
 
         $this->assertSame($meta->get($key), $value);
     }
 
     /**
      * @test
-     * @dataProvider validKeyValueTypeProvider
+     * @dataProvider keyValueTypeProvider
      */
-    public function it_can_create_meta($key, $value, $type)
+    public function it_can_create_meta($key, $value, $type = null)
     {
         $meta = new MetaHandler;
 
-        $meta->set($key, $value, $type);
-
-        $meta->update($key, $value, $type);
+        if ($type === null) {
+            $meta->set($key, $value);
+            $meta->update($key, $value);
+        } else {
+            $meta->set($key, $value, $type);
+            $meta->update($key, $value, $type);
+        }
 
         $this->assertSame($meta->get($key), $value);
     }
 
     /**
      * @test
-     * @dataProvider validKeyValueTypeProvider
+     * @dataProvider keyValueTypeProvider
      */
-    public function it_can_update_meta($key, $value, $type)
+    public function it_can_update_meta($key, $value, $type = null)
     {
         $meta = new MetaHandler;
 
-        $meta->set($key, $value, $type);
-
-        //dd(\DB::table($this->table)->get());
-
-        $meta->update($key, $value, $type);
+        if ($type === null) {
+            $meta->set($key, $value);
+            $meta->update($key, $value);
+        } else {
+            $meta->set($key, $value, $type);
+            $meta->update($key, $value, $type);
+        }
 
         $this->assertSame($meta->get($key), $value);
     }
@@ -100,19 +115,6 @@ class MetaHandlerTest extends TestCase
 
     /**
      * @test
-     * @dataProvider validKeyValueTypeProvider
-     */
-    public function it_can_set_and_get_meta_without_passing_type($key, $value, $unused)
-    {
-        $meta = new MetaHandler;
-
-        $meta->set($key, $value);
-
-        $this->assertEquals($meta->get($key), $value);
-    }
-
-    /**
-     * @test
      */
     public function it_will_return_default_value_when_key_not_exist()
     {
@@ -125,7 +127,7 @@ class MetaHandlerTest extends TestCase
 
     /**
      * @test
-     * @dataProvider validKeyValueTypeProvider
+     * @dataProvider keyValueTypeProvider
      */
     public function it_can_check_meta_exists($key, $value)
     {
@@ -142,7 +144,7 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_count_meta()
     {
-        \DB::table($this->table)->truncate();
+        \DB::table((new Meta)->getTable())->truncate();
 
         $meta = new MetaHandler;
 
@@ -171,7 +173,7 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_get_all_meta()
     {
-        \DB::table($this->table)->truncate();
+        \DB::table((new Meta)->getTable())->truncate();
 
         $meta = new MetaHandler;
 
@@ -195,7 +197,7 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_get_all_keys()
     {
-        \DB::table($this->table)->truncate();
+        \DB::table((new Meta)->getTable())->truncate();
 
         $meta = new MetaHandler;
 
@@ -225,7 +227,7 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_remove_meta_by_key()
     {
-        \DB::table($this->table)->truncate();
+        \DB::table((new Meta)->getTable())->truncate();
 
         $meta = new MetaHandler;
 
@@ -243,7 +245,7 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_purge_meta()
     {
-        \DB::table($this->table)->truncate();
+        \DB::table((new Meta)->getTable())->truncate();
 
         $meta = new MetaHandler;
 
