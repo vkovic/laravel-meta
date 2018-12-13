@@ -15,8 +15,8 @@ class CreateMetaTable extends Migration
     {
         Schema::create('meta', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('realm', 128)->default('');
-            $table->string('key', 128);
+            $table->string('realm')->default('');
+            $table->string('key');
             $table->longText('value')->nullable();
             $table->string('type')->default('string'); // null, string, int, float, bool, array
 
