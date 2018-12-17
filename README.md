@@ -52,7 +52,7 @@ php artisan migrate
 
 ### With facade
 
-If you want to use facade (e.g. `Meta::set('foo', ''bar)`) for more intuitive coding, no problem, just register facade in app config file:
+If you want to use facade (e.g. `Meta::set('foo', 'bar')`) for more intuitive coding, no problem, just register facade in app config file:
 
 ```php
 // File: config/app.php
