@@ -9,9 +9,6 @@
 
 Easily store and access all kind of meta data for your application in dedicated table.
 
-This can be neat for all kind of global storage for you application, like for example global application settings.
-If you need to relate meta data just with your models use (vkovic/laravel-model-meta)[]
-
 ---
 
 ## Compatibility
@@ -26,20 +23,25 @@ Install the package via composer:
 composer require vkovic/laravel-meta
 ```
 
-The package needs to be registered in service providers:
+The package needs to be registered in service providers, so just add it to providers array:
 
 ```php
 // File: config/app.php
 
 // ...
 
-/*
- * Package Service Providers...
- */
+'providers' => [
 
-// ...
+    /*
+     * Package Service Providers...
+     */
 
-Vkovic\LaravelDbRedirector\Providers\DbRedirectorServiceProvider::class,
+    // ...
+
+    Vkovic\LaravelDbRedirector\Providers\DbRedirectorServiceProvider::class,
+
+    // ...
+];
 ```
 
 Run migrations to create table which will be used to store our meta data:
@@ -48,119 +50,119 @@ Run migrations to create table which will be used to store our meta data:
 php artisan migrate
 ```
 
-## Usage: Simple Examples
+### With facade
 
-Writing and reading meta data is easy.
-You just use provided `MetaHandler` class and few handy methods it contains.
+If you want to use facade (e.g. `Meta::set('foo', ''bar)`) for more intuitive coding, no problem, just register facade in app config file:
 
-So, in every file where we want to use meta data functionality,
-we should include provided `MetaHandler` class like this:
+```php
+// File: config/app.php
+
+// ...
+
+'aliases' => [
+
+    // ...
+
+    'Meta' => \Vkovic\LaravelMeta\Facades\MetaFacade::class,
+]
+```
+
+### Without facade
+
+If however you don't want to use facade you can still use this package with provided meta handler class.
+In this case you do not need to register facade but you need to include `MetaHandler` class.
 
 ```php
 use Vkovic\LaravelMeta\MetaHandler;
+
+// ...
+
+$meta = new MetaHandler;
+$meta->set('foo', 'bar');
 ```
 
-Now we have everything we need to start using this package.
+## Usage: Simple Examples
+
+In examples below we will use facade approach.
 
 Let's create and retrieve some meta data:
 
 ```php
-$meta = new MetaHandler;
+// Set meta value as string
+Meta::set('foo', 'bar');
 
-// Set value by key
-$meta->set('someKey', 'someValue');
+// Get meta value
+Meta::get('foo')) // : 'bar'
 
-// Get value by key
-dd($meta->get('someKey'));
-
-// Result: 'someValue'
-
-// In case there is no meta data found for givven key,
+// In case there is no meta data found for given key,
 // we can pass default value to return
-dd($meta->get('unexistingKey', 'foo'));
+Meta::get('baz', 'default'); // : 'default'
+```
 
-// Result: 'foo'
+Beside string, meta data can also be stored as integer, float, null, boolean or array:
+
+```php
+Meta::set('age', 35);
+Meta::set('temperature', 24.7);
+Meta::set('value', null);
+Meta::set('employed', true);
+Meta::set('fruits', ['orange', 'apple']);
+
+Meta::get('age')) // : 35
+Meta::get('temperature')) // : 24.7
+Meta::get('value', null); // : null
+Meta::get('employed'); // : true
+Meta::get('fruits', ['orange', 'apple']); // : ['orange', 'apple']
 ```
 
 We can easily check if meta exists without actually retrieving it from meta table:
 
 ```php
-$meta = new MetaHandler;
+Meta::set('foo', 'bar');
 
-$meta->set('someKey', 'someValue');
-
-$meta->exists('someKey');
-
-// Result: true
-
-dd($meta->exists('unexistingKey'));
-
-// Result: false
+Meta::exists('foo'); // : true
 ```
 
-Counting meta is also a breeze:
+Counting all meta records is also a breeze:
 
 ```php
-$meta = new MetaHandler;
+Meta::set('a', 'one');
+Meta::set('b', 'two');
 
-$meta->set('someKey', 'someValue');
-$meta->set('foo', 'bar');
-
-dd($meta->count());
-// Result: 2
+Meta::count(); // : 2
 ```
 
 If we need all meta data, or just keys, no problem:
 
 ```php
-$meta = new MetaHandler;
-
-$meta->set('someKey', 'someValue');
-$meta->set('foo', 'bar');
-$meta->set('one', 'two');
+Meta::set('a', 'one');
+Meta::set('b', 'two');
+Meta::set('c', 'three');
 
 // Get all meta data
-dd($meta->all());
-
-// Result:
-// [
-//     'someKey' => 'someValue',
-//     'foo' => 'bar',
-//     'one' => 'two',
-// ]
+Meta::all(); // : ['a' => 'one', 'b' => 'two', 'c' => 'three']
 
 // Get only keys
-dd($meta->keys());
-
-// Result:
-// [
-//     0 => 'someKey',
-//     1 => 'foo'
-//     2 => 'one'
-// ]
+Meta::keys(); // : [0 => 'a', 1 => 'b', 2 => 'c']
 ```
 
 Also, we can remove meta easily:
 
 ```php
-$meta = new MetaHandler;
-
-$meta->set('someKey', 'someValue');
-$meta->set('foo', 'bar');
-$meta->set('one', 'two');
+Meta::set('a', 'one');
+Meta::set('b', 'two');
+Meta::set('c', 'three');
 
 // Remove meta by key
-$meta->remove('someKey');
+Meta::remove('a');
 
 // Or array of keys
-$meta->remove(['foo', 'one']);
+Meta::remove(['b', 'c']);
 ```
 
 If, for some reason, we want to delete all meta at once, no problem:
 
 ```php
-$meta = new MetaHandler;
-
-// Purge meta. This will delete all meta data from our meta table!
-$meta->purge();
+// This will delete all meta data from our meta table!
+Meta::purge();
 ```

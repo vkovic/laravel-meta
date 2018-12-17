@@ -13,15 +13,6 @@ class Meta extends Model
 
     protected static $realm = 'vkovic/laravel-meta';
 
-    protected $allowedTypes = [
-        'null',
-        'string',
-        'int', 'integer',
-        'float', 'double', 'real',
-        'bool', 'boolean',
-        'array',
-    ];
-
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
@@ -128,11 +119,11 @@ class Meta extends Model
             return $value;
         } elseif ($type == 'array') {
             return json_decode($value, true);
-        } elseif ($type == 'int' || $type == 'integer') {
+        } elseif ($type == 'int') {
             return (int) $value;
-        } elseif ($type == 'float' || $type == 'double' || $type == 'real') {
+        } elseif ($type == 'float') {
             return (float) $value;
-        } elseif ($type == 'bool' || $type == 'boolean') {
+        } elseif ($type == 'bool') {
             return (bool) $value;
         }
     }

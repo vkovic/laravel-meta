@@ -20,8 +20,8 @@ class MetaHandlerTest extends TestCase
             [str_random(), null],
             [str_random(), 1],
             [str_random(), 1.1],
-            [str_random(), true, 'boolean'],
-            [str_random(), false, 'boolean'],
+            [str_random(), true],
+            [str_random(), false],
             [str_random(), []],
             [str_random(), range(1, 10)],
         ];
