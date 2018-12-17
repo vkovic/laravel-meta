@@ -9,7 +9,7 @@ use Vkovic\LaravelMeta\Test\TestCase;
 class MetaFacadeTest extends TestCase
 {
     /**
-     * Valid data provider for: key, value and type
+     * Valid data provider for: key and value
      *
      * @return array
      */
@@ -57,8 +57,7 @@ class MetaFacadeTest extends TestCase
      */
     public function it_can_create_meta($key, $value)
     {
-        Meta::set($key, $value);
-        Meta::update($key, $value);
+        Meta::create($key, $value);
 
         $this->assertSame(Meta::get($key), $value);
     }
@@ -69,10 +68,12 @@ class MetaFacadeTest extends TestCase
      */
     public function it_can_update_meta($key, $value)
     {
-        Meta::set($key, $value);
-        Meta::update($key, $value);
+        $newValue = str_random();
 
-        $this->assertSame(Meta::get($key), $value);
+        Meta::set($key, $value);
+        Meta::update($key, $newValue);
+
+        $this->assertSame(Meta::get($key), $newValue);
     }
 
     /**
@@ -81,7 +82,6 @@ class MetaFacadeTest extends TestCase
     public function it_throws_exception_when_updating_non_existing_meta()
     {
         $this->expectExceptionMessage("Can't update");
-
 
         Meta::update('unexistingKey', '');
     }
@@ -92,7 +92,6 @@ class MetaFacadeTest extends TestCase
     public function it_throws_exception_when_creating_same_meta()
     {
         $this->expectExceptionMessage("Can't create");
-
 
         Meta::set('foo', 'bar');
 
@@ -126,11 +125,7 @@ class MetaFacadeTest extends TestCase
      */
     public function it_can_count_meta()
     {
-        //
         // Check zero count
-        //
-
-
         $this->assertTrue(Meta::count() === 0);
 
         //
@@ -157,7 +152,7 @@ class MetaFacadeTest extends TestCase
         Meta::set($key1, $value1);
 
         $key2 = str_random();
-        $value2 = str_random();
+        $value2 = range(0, 10);
         Meta::set($key2, $value2);
 
         $this->assertEquals([
@@ -166,20 +161,15 @@ class MetaFacadeTest extends TestCase
         ], Meta::all());
     }
 
-
     /**
      * @test
      */
     public function it_can_get_all_keys()
     {
-        $count = rand(0, 10);
-
-        if ($count === 0) {
-            $this->assertEmpty(Meta::keys());
-        }
+        $this->assertEmpty(Meta::keys());
 
         $keysToSave = [];
-        for ($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < rand(1, 10); $i++) {
             $key = str_random();
             $keysToSave[] = $key;
 
@@ -204,7 +194,7 @@ class MetaFacadeTest extends TestCase
         Meta::set($key, $value);
         Meta::remove($key);
 
-        $this->assertEmpty(Meta::all());
+        $this->assertEquals(0, Meta::count());
     }
 
     /**
@@ -221,6 +211,6 @@ class MetaFacadeTest extends TestCase
 
         Meta::purge();
 
-        $this->assertEmpty(Meta::all());
+        $this->assertEquals(0, Meta::count());
     }
 }
