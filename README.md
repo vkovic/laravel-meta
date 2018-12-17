@@ -7,7 +7,7 @@
 
 ### Laravel meta storage for different purposes
 
-Easily store and access all kind of meta data for your application in dedicated table.
+Easily store and access all kind of metadata for your application in dedicated table.
 
 ---
 
@@ -38,13 +38,13 @@ The package needs to be registered in service providers, so just add it to provi
 
     // ...
 
-    Vkovic\LaravelDbRedirector\Providers\DbRedirectorServiceProvider::class,
+    Vkovic\LaravelMeta\Providers\LaravelMetaServiceProvider::class,
 
     // ...
 ];
 ```
 
-Run migrations to create table which will be used to store our meta data:
+Run migrations to create table which will be used to store our metadata:
 
 ```bash
 php artisan migrate
@@ -85,7 +85,7 @@ $meta->set('foo', 'bar');
 
 In examples below we will use facade approach.
 
-Let's create and retrieve some meta data:
+Let's create and retrieve some metadata:
 
 ```php
 // Set meta value as string
@@ -94,12 +94,12 @@ Meta::set('foo', 'bar');
 // Get meta value
 Meta::get('foo')) // : 'bar'
 
-// In case there is no meta data found for given key,
+// In case there is no metadata found for given key,
 // we can pass default value to return
 Meta::get('baz', 'default'); // : 'default'
 ```
 
-Beside string, meta data can also be stored as integer, float, null, boolean or array:
+Beside string, metadata can also be stored as integer, float, null, boolean or array:
 
 ```php
 Meta::set('age', 35);
@@ -132,14 +132,14 @@ Meta::set('b', 'two');
 Meta::count(); // : 2
 ```
 
-If we need all meta data, or just keys, no problem:
+If we need all metadata, or just keys, no problem:
 
 ```php
 Meta::set('a', 'one');
 Meta::set('b', 'two');
 Meta::set('c', 'three');
 
-// Get all meta data
+// Get all metadata
 Meta::all(); // : ['a' => 'one', 'b' => 'two', 'c' => 'three']
 
 // Get only keys
@@ -163,6 +163,6 @@ Meta::remove(['b', 'c']);
 If, for some reason, we want to delete all meta at once, no problem:
 
 ```php
-// This will delete all meta data from our meta table!
+// This will delete all metadata from our meta table!
 Meta::purge();
 ```
