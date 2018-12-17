@@ -2,10 +2,21 @@
 
 namespace Vkovic\LaravelMeta;
 
+use Illuminate\Database\Eloquent\Model;
 use Vkovic\LaravelMeta\Models\Meta;
 
 class MetaHandler
 {
+    /**
+     * @var Model
+     */
+    protected $metaModel;
+
+    public function __construct(Model $model)
+    {
+        $this->metaModel = $model;
+    }
+
     /**
      * Set meta at given key
      * for package realm.
@@ -16,7 +27,7 @@ class MetaHandler
      */
     public function set($key, $value)
     {
-        $meta = Meta::where('key', $key)->first();
+        $meta = $this->metaModel::where('key', $key)->first();
 
         if ($meta === null) {
             $meta = new Meta;

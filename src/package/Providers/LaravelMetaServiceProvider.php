@@ -4,6 +4,7 @@ namespace Vkovic\LaravelMeta\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Vkovic\LaravelMeta\MetaHandler;
+use Vkovic\LaravelMeta\Models\Meta;
 
 class LaravelMetaServiceProvider extends ServiceProvider
 {
@@ -20,7 +21,7 @@ class LaravelMetaServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('vkovic.laravel-meta', function () {
-            return new MetaHandler;
+            return new MetaHandler(new Meta);
         });
     }
 }

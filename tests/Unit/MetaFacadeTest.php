@@ -2,10 +2,10 @@
 
 namespace Vkovic\LaravelMeta\Test\Unit;
 
-use Vkovic\LaravelMeta\MetaHandler;
+use Meta;
 use Vkovic\LaravelMeta\Test\TestCase;
 
-class MetaHandlerTest extends TestCase
+class MetaFacadeTest extends TestCase
 {
     /**
      * Valid data provider for: key, value and type
@@ -33,11 +33,9 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_set_and_get_meta($key, $value)
     {
-        $metaHandler = new MetaHandler();
+        Meta::set($key, $value);
 
-        $metaHandler->set($key, $value);
-
-        $this->assertSame($metaHandler->get($key), $value);
+        $this->assertSame(Meta::get($key), $value);
     }
 
     /**
@@ -46,12 +44,10 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_create_meta($key, $value)
     {
-        $metaHandler = new MetaHandler();
+        Meta::set($key, $value);
+        Meta::update($key, $value);
 
-        $metaHandler->set($key, $value);
-        $metaHandler->update($key, $value);
-
-        $this->assertSame($metaHandler->get($key), $value);
+        $this->assertSame(Meta::get($key), $value);
     }
 
     /**
@@ -60,12 +56,10 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_update_meta($key, $value)
     {
-        $metaHandler = new MetaHandler();
+        Meta::set($key, $value);
+        Meta::update($key, $value);
 
-        $metaHandler->set($key, $value);
-        $metaHandler->update($key, $value);
-
-        $this->assertSame($metaHandler->get($key), $value);
+        $this->assertSame(Meta::get($key), $value);
     }
 
     /**
@@ -75,9 +69,8 @@ class MetaHandlerTest extends TestCase
     {
         $this->expectExceptionMessage("Can't update");
 
-        $metaHandler = new MetaHandler();
 
-        $metaHandler->update('unexistingKey', '');
+        Meta::update('unexistingKey', '');
     }
 
     /**
@@ -87,11 +80,10 @@ class MetaHandlerTest extends TestCase
     {
         $this->expectExceptionMessage("Can't create");
 
-        $metaHandler = new MetaHandler();
 
-        $metaHandler->set('foo', 'bar');
+        Meta::set('foo', 'bar');
 
-        $metaHandler->create('foo', '');
+        Meta::create('foo', '');
     }
 
     /**
@@ -99,11 +91,9 @@ class MetaHandlerTest extends TestCase
      */
     public function it_will_return_default_value_when_key_not_exist()
     {
-        $metaHandler = new MetaHandler();
-
         $default = str_random();
 
-        $this->assertEquals($default, $metaHandler->get('nonExistingKey', $default));
+        $this->assertEquals($default, Meta::get('nonExistingKey', $default));
     }
 
     /**
@@ -112,12 +102,10 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_check_meta_exists($key, $value)
     {
-        $metaHandler = new MetaHandler();
+        Meta::set($key, $value);
 
-        $metaHandler->set($key, $value);
-
-        $this->assertTrue($metaHandler->exists($key));
-        $this->assertFalse($metaHandler->exists(str_random()));
+        $this->assertTrue(Meta::exists($key));
+        $this->assertFalse(Meta::exists(str_random()));
     }
 
     /**
@@ -129,9 +117,8 @@ class MetaHandlerTest extends TestCase
         // Check zero count
         //
 
-        $metaHandler = new MetaHandler();
 
-        $this->assertTrue($metaHandler->count() === 0);
+        $this->assertTrue(Meta::count() === 0);
 
         //
         // Check count in default realm
@@ -141,10 +128,10 @@ class MetaHandlerTest extends TestCase
         for ($i = 0; $i < $count; $i++) {
             $key = str_random();
             $value = str_random();
-            $metaHandler->set($key, $value);
+            Meta::set($key, $value);
         }
 
-        $this->assertTrue($metaHandler->count() === $count);
+        $this->assertTrue(Meta::count() === $count);
     }
 
     /**
@@ -152,20 +139,18 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_get_all_meta()
     {
-        $metaHandler = new MetaHandler();
-
         $key1 = str_random();
         $value1 = str_random();
-        $metaHandler->set($key1, $value1);
+        Meta::set($key1, $value1);
 
         $key2 = str_random();
         $value2 = str_random();
-        $metaHandler->set($key2, $value2);
+        Meta::set($key2, $value2);
 
         $this->assertEquals([
             $key1 => $value1,
             $key2 => $value2,
-        ], $metaHandler->all());
+        ], Meta::all());
     }
 
 
@@ -174,12 +159,10 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_get_all_keys()
     {
-        $metaHandler = new MetaHandler();
-
         $count = rand(0, 10);
 
         if ($count === 0) {
-            $this->assertEmpty($metaHandler->keys());
+            $this->assertEmpty(Meta::keys());
         }
 
         $keysToSave = [];
@@ -187,10 +170,10 @@ class MetaHandlerTest extends TestCase
             $key = str_random();
             $keysToSave[] = $key;
 
-            $metaHandler->set($key, '');
+            Meta::set($key, '');
         }
 
-        $metaKeys = $metaHandler->keys();
+        $metaKeys = Meta::keys();
 
         foreach ($keysToSave as $keyToSave) {
             $this->assertContains($keyToSave, $metaKeys);
@@ -202,15 +185,13 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_remove_meta_by_key()
     {
-        $metaHandler = new MetaHandler();
-
         $key = str_random();
         $value = str_random();
 
-        $metaHandler->set($key, $value);
-        $metaHandler->remove($key);
+        Meta::set($key, $value);
+        Meta::remove($key);
 
-        $this->assertEmpty($metaHandler->all());
+        $this->assertEmpty(Meta::all());
     }
 
     /**
@@ -218,17 +199,15 @@ class MetaHandlerTest extends TestCase
      */
     public function it_can_purge_meta()
     {
-        $metaHandler = new MetaHandler();
-
         $count = rand(0, 10);
         for ($i = 0; $i < $count; $i++) {
             $key = str_random();
             $value = str_random();
-            $metaHandler->set($key, $value);
+            Meta::set($key, $value);
         }
 
-        $metaHandler->purge();
+        Meta::purge();
 
-        $this->assertEmpty($metaHandler->all());
+        $this->assertEmpty(Meta::all());
     }
 }
