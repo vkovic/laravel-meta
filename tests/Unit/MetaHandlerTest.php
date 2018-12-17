@@ -15,19 +15,15 @@ class MetaHandlerTest extends TestCase
     public function keyValueTypeProvider()
     {
         return [
-            // key | value | type
+            // key | value
             [str_random(), str_random()],
-            [str_random(), str_random(), 'string'],
             [str_random(), null],
-            [str_random(), null, 'null'],
-            [str_random(), 1, 'int'],
-            [str_random(), 1.1, 'float'],
+            [str_random(), 1],
+            [str_random(), 1.1],
             [str_random(), true, 'boolean'],
             [str_random(), false, 'boolean'],
             [str_random(), []],
-            [str_random(), [], 'array'],
             [str_random(), range(1, 10)],
-            [str_random(), range(1, 10), 'array'],
         ];
     }
 
@@ -35,55 +31,41 @@ class MetaHandlerTest extends TestCase
      * @test
      * @dataProvider keyValueTypeProvider
      */
-    public function it_can_set_and_get_meta($key, $value, $type = null)
+    public function it_can_set_and_get_meta($key, $value)
     {
         $metaHandler = new MetaHandler();
 
-        if ($type === null) {
-            $metaHandler->setMeta($key, $value);
-        } else {
-            $metaHandler->setMeta($key, $value, $type);
-        }
+        $metaHandler->set($key, $value);
 
-        $this->assertSame($metaHandler->getMeta($key), $value);
+        $this->assertSame($metaHandler->get($key), $value);
     }
 
     /**
      * @test
      * @dataProvider keyValueTypeProvider
      */
-    public function it_can_create_meta($key, $value, $type = null)
+    public function it_can_create_meta($key, $value)
     {
         $metaHandler = new MetaHandler();
 
-        if ($type === null) {
-            $metaHandler->setMeta($key, $value);
-            $metaHandler->updateMeta($key, $value);
-        } else {
-            $metaHandler->setMeta($key, $value, $type);
-            $metaHandler->updateMeta($key, $value, $type);
-        }
+        $metaHandler->set($key, $value);
+        $metaHandler->update($key, $value);
 
-        $this->assertSame($metaHandler->getMeta($key), $value);
+        $this->assertSame($metaHandler->get($key), $value);
     }
 
     /**
      * @test
      * @dataProvider keyValueTypeProvider
      */
-    public function it_can_update_meta($key, $value, $type = null)
+    public function it_can_update_meta($key, $value)
     {
         $metaHandler = new MetaHandler();
 
-        if ($type === null) {
-            $metaHandler->setMeta($key, $value);
-            $metaHandler->updateMeta($key, $value);
-        } else {
-            $metaHandler->setMeta($key, $value, $type);
-            $metaHandler->updateMeta($key, $value, $type);
-        }
+        $metaHandler->set($key, $value);
+        $metaHandler->update($key, $value);
 
-        $this->assertSame($metaHandler->getMeta($key), $value);
+        $this->assertSame($metaHandler->get($key), $value);
     }
 
     /**
@@ -95,7 +77,7 @@ class MetaHandlerTest extends TestCase
 
         $metaHandler = new MetaHandler();
 
-        $metaHandler->updateMeta('unexistingKey', '');
+        $metaHandler->update('unexistingKey', '');
     }
 
     /**
@@ -107,9 +89,9 @@ class MetaHandlerTest extends TestCase
 
         $metaHandler = new MetaHandler();
 
-        $metaHandler->setMeta('foo', 'bar');
+        $metaHandler->set('foo', 'bar');
 
-        $metaHandler->createMeta('foo', '');
+        $metaHandler->create('foo', '');
     }
 
     /**
@@ -121,7 +103,7 @@ class MetaHandlerTest extends TestCase
 
         $default = str_random();
 
-        $this->assertEquals($default, $metaHandler->getMeta('nonExistingKey', $default));
+        $this->assertEquals($default, $metaHandler->get('nonExistingKey', $default));
     }
 
     /**
@@ -132,10 +114,10 @@ class MetaHandlerTest extends TestCase
     {
         $metaHandler = new MetaHandler();
 
-        $metaHandler->setMeta($key, $value);
+        $metaHandler->set($key, $value);
 
-        $this->assertTrue($metaHandler->metaExists($key));
-        $this->assertFalse($metaHandler->metaExists(str_random()));
+        $this->assertTrue($metaHandler->exists($key));
+        $this->assertFalse($metaHandler->exists(str_random()));
     }
 
     /**
@@ -149,7 +131,7 @@ class MetaHandlerTest extends TestCase
 
         $metaHandler = new MetaHandler();
 
-        $this->assertTrue($metaHandler->countMeta() === 0);
+        $this->assertTrue($metaHandler->count() === 0);
 
         //
         // Check count in default realm
@@ -159,10 +141,10 @@ class MetaHandlerTest extends TestCase
         for ($i = 0; $i < $count; $i++) {
             $key = str_random();
             $value = str_random();
-            $metaHandler->setMeta($key, $value);
+            $metaHandler->set($key, $value);
         }
 
-        $this->assertTrue($metaHandler->countMeta() === $count);
+        $this->assertTrue($metaHandler->count() === $count);
     }
 
     /**
@@ -174,16 +156,16 @@ class MetaHandlerTest extends TestCase
 
         $key1 = str_random();
         $value1 = str_random();
-        $metaHandler->setMeta($key1, $value1);
+        $metaHandler->set($key1, $value1);
 
         $key2 = str_random();
         $value2 = str_random();
-        $metaHandler->setMeta($key2, $value2);
+        $metaHandler->set($key2, $value2);
 
         $this->assertEquals([
             $key1 => $value1,
             $key2 => $value2,
-        ], $metaHandler->allMeta());
+        ], $metaHandler->all());
     }
 
 
@@ -197,7 +179,7 @@ class MetaHandlerTest extends TestCase
         $count = rand(0, 10);
 
         if ($count === 0) {
-            $this->assertEmpty($metaHandler->metaKeys());
+            $this->assertEmpty($metaHandler->keys());
         }
 
         $keysToSave = [];
@@ -205,10 +187,10 @@ class MetaHandlerTest extends TestCase
             $key = str_random();
             $keysToSave[] = $key;
 
-            $metaHandler->setMeta($key, '');
+            $metaHandler->set($key, '');
         }
 
-        $metaKeys = $metaHandler->metaKeys();
+        $metaKeys = $metaHandler->keys();
 
         foreach ($keysToSave as $keyToSave) {
             $this->assertContains($keyToSave, $metaKeys);
@@ -225,10 +207,10 @@ class MetaHandlerTest extends TestCase
         $key = str_random();
         $value = str_random();
 
-        $metaHandler->setMeta($key, $value);
-        $metaHandler->removeMeta($key);
+        $metaHandler->set($key, $value);
+        $metaHandler->remove($key);
 
-        $this->assertEmpty($metaHandler->allMeta());
+        $this->assertEmpty($metaHandler->all());
     }
 
     /**
@@ -242,11 +224,11 @@ class MetaHandlerTest extends TestCase
         for ($i = 0; $i < $count; $i++) {
             $key = str_random();
             $value = str_random();
-            $metaHandler->setMeta($key, $value);
+            $metaHandler->set($key, $value);
         }
 
-        $metaHandler->purgeMeta();
+        $metaHandler->purge();
 
-        $this->assertEmpty($metaHandler->allMeta());
+        $this->assertEmpty($metaHandler->all());
     }
 }

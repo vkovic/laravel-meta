@@ -36,16 +36,13 @@ class Meta extends Model
 
         // Add global scope to be used in every query
         static::addGlobalScope('realm', function (Builder $query) {
-            $query->where(['realm' => static::$realm])->orderBy('key');
+            $query->where(['realm' => static::$realm]);
         });
 
         // Saving callback
         static::saving(function (Meta $model) {
             $value = $model->attributes['value'];
-            $type = $model->attributes['type'];
 
-            // Force type and convert attribute
-            // in case of array and bool
             if (is_array($value)) {
                 $type = 'array';
                 $value = json_encode($value);
@@ -54,6 +51,15 @@ class Meta extends Model
                 $value = $value === true ? '1' : '0';
             } elseif ($value === null) {
                 $type = 'null';
+            } elseif (is_int($value)) {
+                $type = 'int';
+                $value = (string) $value;
+            } elseif (is_float($value)) {
+                $type = 'float';
+                $value = (string) $value;
+            } else {
+                $type = 'string';
+                $value = (string) $value;
             }
 
             $model->attributes['type'] = $type;
@@ -82,12 +88,10 @@ class Meta extends Model
      */
     public function setKeyAttribute($value)
     {
-        // Key must be either integer or string
-        if (!is_string($value) && !is_int($value)) {
-            throw new \Exception('Invalid key type. Allowed: string, integer');
+        // Key must be string
+        if (!is_string($value)) {
+            throw new \Exception('Invalid key type. Key must be string');
         }
-
-        $value = (string) $value;
 
         // Key must be below 129 chars
         if (strlen($value) > 128) {
@@ -106,18 +110,7 @@ class Meta extends Model
      */
     public function setTypeAttribute($value)
     {
-        if (!in_array($value, $this->allowedTypes)) {
-            // Convert value to string
-            $value = is_array($value)
-                ? json_encode($value)
-                : (string) $value;
-
-            $message = "Invalid type $value . Allowed types: ";
-            $message .= implode(', ', $this->allowedTypes);
-            throw new \Exception($message);
-        }
-
-        $this->attributes['type'] = $value;
+        throw new \Exception("Meta type can't be set explicitly");
     }
 
     /**

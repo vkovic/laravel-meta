@@ -13,9 +13,8 @@ class MetaHandler
      *
      * @param string $key
      * @param mixed  $value
-     * @param string $type
      */
-    public function setMeta($key, $value, $type = 'string')
+    public function set($key, $value)
     {
         $meta = Meta::where('key', $key)->first();
 
@@ -25,7 +24,6 @@ class MetaHandler
         }
 
         $meta->value = $value;
-        $meta->type = $type;
 
         $meta->save();
     }
@@ -37,11 +35,10 @@ class MetaHandler
      *
      * @param string $key
      * @param mixed  $value
-     * @param string $type
      *
      * @throws \Exception
      */
-    public function createMeta($key, $value, $type = 'string')
+    public function create($key, $value)
     {
         $exists = Meta::where('key', $key)
             ->exists();
@@ -55,7 +52,6 @@ class MetaHandler
         $meta = new Meta;
 
         $meta->key = $key;
-        $meta->type = $type;
         $meta->value = $value;
 
         $meta->save();
@@ -68,11 +64,10 @@ class MetaHandler
      *
      * @param string $key
      * @param mixed  $value
-     * @param string $type
      *
      * @throws \Exception
      */
-    public function updateMeta($key, $value, $type = 'string')
+    public function update($key, $value)
     {
         try {
             $meta = Meta::where('key', $key)
@@ -84,7 +79,6 @@ class MetaHandler
             throw new \Exception($message);
         }
 
-        $meta->type = $type;
         $meta->value = $value;
 
         $meta->save();
@@ -99,7 +93,7 @@ class MetaHandler
      *
      * @return array
      */
-    public function getMeta($key, $default = null)
+    public function get($key, $default = null)
     {
         $meta = Meta::where('key', $key)
             ->first();
@@ -117,7 +111,7 @@ class MetaHandler
      *
      * @return bool
      */
-    public function metaExists($key)
+    public function exists($key)
     {
         return Meta::where('key', $key)
             ->exists();
@@ -131,7 +125,7 @@ class MetaHandler
      *
      * @return int
      */
-    public function countMeta()
+    public function count()
     {
         return Meta::count();
     }
@@ -142,7 +136,7 @@ class MetaHandler
      *
      * @return array
      */
-    public function allMeta()
+    public function all()
     {
         $meta = Meta::get(['key', 'value', 'type']);
 
@@ -160,7 +154,7 @@ class MetaHandler
      *
      * @return array
      */
-    public function metaKeys()
+    public function keys()
     {
         return Meta::pluck('key')->toArray();
     }
@@ -171,7 +165,7 @@ class MetaHandler
      *
      * @param string|array $key
      */
-    public function removeMeta($key)
+    public function remove($key)
     {
         $keys = (array) $key;
 
@@ -184,7 +178,7 @@ class MetaHandler
      *
      * @return int Number of records deleted
      */
-    public function purgeMeta()
+    public function purge()
     {
         return Meta::realm()->delete();
     }

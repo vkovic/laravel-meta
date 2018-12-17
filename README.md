@@ -7,7 +7,10 @@
 
 ### Laravel meta storage for different purposes
 
-Easy store and access all kind of meta data in dedicated table.
+Easily store and access all kind of meta data for your application in dedicated table.
+
+This can be neat for all kind of global storage for you application, like for example global application settings.
+If you need to relate meta data just with your models use (vkovic/laravel-model-meta)[]
 
 ---
 
