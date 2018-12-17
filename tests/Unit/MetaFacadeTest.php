@@ -3,6 +3,7 @@
 namespace Vkovic\LaravelMeta\Test\Unit;
 
 use Meta;
+use Vkovic\LaravelMeta\Models\Meta as MetaModel;
 use Vkovic\LaravelMeta\Test\TestCase;
 
 class MetaFacadeTest extends TestCase
@@ -25,6 +26,18 @@ class MetaFacadeTest extends TestCase
             [str_random(), []],
             [str_random(), range(1, 10)],
         ];
+    }
+
+    /**
+     * @test
+     */
+    public function it_saves_to_correct_realm()
+    {
+        Meta::set('foo', '');
+
+        $this->assertDatabaseHas('meta', [
+            'realm' => MetaModel::getRealm()
+        ]);
     }
 
     /**

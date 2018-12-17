@@ -3,7 +3,6 @@
 namespace Vkovic\LaravelMeta;
 
 use Illuminate\Database\Eloquent\Model;
-use Vkovic\LaravelMeta\Models\Meta;
 
 class MetaHandler
 {
@@ -30,7 +29,7 @@ class MetaHandler
         $meta = $this->metaModel::where('key', $key)->first();
 
         if ($meta === null) {
-            $meta = new Meta;
+            $meta = new $this->metaModel;
             $meta->key = $key;
         }
 
@@ -51,7 +50,7 @@ class MetaHandler
      */
     public function create($key, $value)
     {
-        $exists = Meta::where('key', $key)
+        $exists = $this->metaModel::where('key', $key)
             ->exists();
 
         if ($exists) {
@@ -60,7 +59,7 @@ class MetaHandler
             throw new \Exception($message);
         }
 
-        $meta = new Meta;
+        $meta = new $this->metaModel;
 
         $meta->key = $key;
         $meta->value = $value;
@@ -81,7 +80,7 @@ class MetaHandler
     public function update($key, $value)
     {
         try {
-            $meta = Meta::where('key', $key)
+            $meta = $this->metaModel::where('key', $key)
                 ->firstOrFail();
         } catch (\Exception $e) {
             $message = "Can't update meta (key: $key). ";
@@ -106,7 +105,7 @@ class MetaHandler
      */
     public function get($key, $default = null)
     {
-        $meta = Meta::where('key', $key)
+        $meta = $this->metaModel::where('key', $key)
             ->first();
 
         return $meta === null
@@ -124,7 +123,7 @@ class MetaHandler
      */
     public function exists($key)
     {
-        return Meta::where('key', $key)
+        return $this->metaModel::where('key', $key)
             ->exists();
     }
 
@@ -138,7 +137,7 @@ class MetaHandler
      */
     public function count()
     {
-        return Meta::count();
+        return $this->metaModel::count();
     }
 
     /**
@@ -149,7 +148,7 @@ class MetaHandler
      */
     public function all()
     {
-        $meta = Meta::get(['key', 'value', 'type']);
+        $meta = $this->metaModel::get(['key', 'value', 'type']);
 
         $data = [];
         foreach ($meta as $m) {
@@ -167,7 +166,7 @@ class MetaHandler
      */
     public function keys()
     {
-        return Meta::pluck('key')->toArray();
+        return $this->metaModel::pluck('key')->toArray();
     }
 
     /**
@@ -180,7 +179,7 @@ class MetaHandler
     {
         $keys = (array) $key;
 
-        Meta::whereIn('key', $keys)->delete();
+        $this->metaModel::whereIn('key', $keys)->delete();
     }
 
     /**
@@ -191,6 +190,6 @@ class MetaHandler
      */
     public function purge()
     {
-        return Meta::realm()->delete();
+        return $this->metaModel::realm()->delete();
     }
 }

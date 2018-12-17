@@ -58,6 +58,11 @@ class Meta extends Model
         });
     }
 
+    public static function getRealm()
+    {
+        return static::$realm;
+    }
+
     /**
      * Filter meta by realm and order by meta key
      *
