@@ -9,6 +9,13 @@
 
 Easily store and access all kind of metadata for your application in dedicated table.
 
+> The package is one of three metadata packages based on the same approach:
+> - vkovic/laravel-meta (this package - general purpose meta storage)
+> - [vkovic/laravel-model-meta](https://github.com/vkovic/laravel-model-meta) (Laravel model related meta storage)
+> - [vkovic/laravel-settings](https://github.com/vkovic/laravel-settings) (app specific settings meta storage)
+>
+> Packages can be used separately or together. Internally they are using same table and share common logic.
+
 ---
 
 ## Compatibility
