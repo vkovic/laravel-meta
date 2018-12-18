@@ -3,6 +3,7 @@
 namespace Vkovic\LaravelMeta;
 
 use Illuminate\Database\Eloquent\Model;
+use Vkovic\LaravelMeta\Models\Meta;
 
 class MetaHandler
 {
@@ -11,9 +12,19 @@ class MetaHandler
      */
     protected $metaModel;
 
-    public function __construct(Model $model)
+    /**
+     * MetaHandler constructor.
+     *
+     * @param Model|null $model Model that'll handle writing to meta table
+     */
+    public function __construct(Model $model = null)
     {
-        $this->metaModel = $model;
+        $this->metaModel = $model ?? new Meta;
+    }
+
+    public function getModel()
+    {
+        return $this->metaModel;
     }
 
     /**
