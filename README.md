@@ -106,6 +106,39 @@ Meta::get('foo')) // : 'bar'
 Meta::get('baz', 'default'); // : 'default'
 ```
 
+Multiple records could be retrieved using `query` method and wildcard `*`:
+
+```php
+Meta::set('settings.display.resolution', '1280x1024');
+Meta::set('settings.display.brightness', 97);
+Meta::set('settings.sound.volume', 54);
+Meta::set('settings.mic.volume', 0);
+
+Meta::query('settings.display.*');
+// Result:
+// [
+//     'settings.display.resolution' => '1280x1024',
+//     'settings.display.brightness' => 97
+// ]
+
+Meta::query('*.sound.*');
+// Result:
+// [
+//     'settings.sound.volume' => 54
+// ]
+
+Meta::query('settings.*.volume');
+// Result:
+// [
+//     'settings.sound.volume' => 54,
+//     'settings.mic.volume' => 0
+// ]
+
+// In case there is no metadata found for given query,
+// we can pass default value to return
+Meta::query('settings.sound.bass', 85); // : 85
+```
+
 Beside string, metadata can also be stored as integer, float, null, boolean or array:
 
 ```php

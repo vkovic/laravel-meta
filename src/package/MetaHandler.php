@@ -125,6 +125,31 @@ class MetaHandler
     }
 
     /**
+     * Get multiple meta key value pairs using wildcard "*"
+     *
+     * @param      $query
+     * @param null $default
+     *
+     * @return array
+     */
+    public function query($query, $default = null)
+    {
+        $query = str_replace('*', '%', $query);
+        $meta = $this->metaModel::where('key', 'LIKE', $query)->get(['key', 'value', 'type']);
+
+        if ($meta->isEmpty()) {
+            return $default;
+        }
+
+        $data = [];
+        foreach ($meta as $m) {
+            $data[$m->key] = $m->value;
+        }
+
+        return $data;
+    }
+
+    /**
      * Check if meta key record exists by given key
      * for package realm
      *

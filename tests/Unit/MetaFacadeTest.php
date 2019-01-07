@@ -66,6 +66,23 @@ class MetaFacadeTest extends TestCase
      * @test
      * @dataProvider keyValueTypeProvider
      */
+    public function it_can_query_meta($key, $value)
+    {
+        Meta::set($key, $value);
+
+        $keyStart = substr($key, 0, 10);
+        $keyMiddle = substr($key, 4, 8);
+        $keyEnd = substr($key, 8, 15);
+
+        $this->assertEquals(Meta::query("$keyStart*")[$key], $value);
+        $this->assertEquals(Meta::query("*$keyMiddle*")[$key], $value);
+        $this->assertEquals(Meta::query("*$keyEnd")[$key], $value);
+    }
+
+    /**
+     * @test
+     * @dataProvider keyValueTypeProvider
+     */
     public function it_can_update_meta($key, $value)
     {
         $newValue = str_random();
