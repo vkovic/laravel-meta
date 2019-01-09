@@ -148,11 +148,11 @@ Meta::set('value', null);
 Meta::set('employed', true);
 Meta::set('fruits', ['orange', 'apple']);
 
-Meta::get('age')) // : 35
-Meta::get('temperature')) // : 24.7
-Meta::get('value', null); // : null
+Meta::get('age'); // : 35
+Meta::get('temperature'); // : 24.7
+Meta::get('value'); // : null
 Meta::get('employed'); // : true
-Meta::get('fruits', ['orange', 'apple']); // : ['orange', 'apple']
+Meta::get('fruits'); // : ['orange', 'apple']
 ```
 
 We can easily check if meta exists without actually retrieving it from meta table:
