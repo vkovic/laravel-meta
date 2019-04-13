@@ -5,6 +5,11 @@
 [![Stable](https://poser.pugx.org/vkovic/laravel-meta/v/stable)](https://packagist.org/packages/vkovic/laravel-meta)
 [![License](https://poser.pugx.org/vkovic/laravel-meta/license)](https://packagist.org/packages/vkovic/laravel-meta)
 
+### Laravel database meta storage for different purposes
+
+This is simple package for easy storage and retrieval of all kind (different data types) of metadata for your
+application in dedicated table.
+
 ---
 
 ## Compatibility
@@ -150,13 +155,11 @@ Meta::getModel();
 
 ---
 
-### Laravel meta storage for different purposes
+## Similar packages
 
-Easily store and access all kind of metadata for your application in dedicated table.
+The package is one of three metadata packages based on the same approach:
+- vkovic/laravel-meta (this package - general purpose meta storage)
+- [vkovic/laravel-model-meta](https://github.com/vkovic/laravel-model-meta) (Laravel model related meta storage)
+- [vkovic/laravel-settings](https://github.com/vkovic/laravel-settings) (app specific settings meta storage)
 
-> The package is one of three metadata packages based on the same approach:
-> - vkovic/laravel-meta (this package - general purpose meta storage)
-> - [vkovic/laravel-model-meta](https://github.com/vkovic/laravel-model-meta) (Laravel model related meta storage)
-> - [vkovic/laravel-settings](https://github.com/vkovic/laravel-settings) (app specific settings meta storage)
->
-> Packages can be used separately or together. Internally they are using same table and share common logic.
+Packages can be used separately or together. Internally they are using same table and share common logic.
