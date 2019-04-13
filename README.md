@@ -155,6 +155,25 @@ Meta::getModel();
 
 ---
 
+## Contributing
+
+If you plan to modify this Laravel package you should run tests that comes with it.
+Easiest way to accomplish this would be with `Docker`, `docker-compose` and `phpunit`.
+
+First, we need to initialize Docker containers:
+
+```bash
+docker-compose up -d
+```
+
+After that, we can run tests and watch the output:
+
+```bash
+docker-compose exec app vendor/bin/phpunit
+```
+
+---
+
 ## Similar packages
 
 The package is one of three metadata packages based on the same approach:
