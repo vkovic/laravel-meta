@@ -5,17 +5,6 @@
 [![Stable](https://poser.pugx.org/vkovic/laravel-meta/v/stable)](https://packagist.org/packages/vkovic/laravel-meta)
 [![License](https://poser.pugx.org/vkovic/laravel-meta/license)](https://packagist.org/packages/vkovic/laravel-meta)
 
-### Laravel meta storage for different purposes
-
-Easily store and access all kind of metadata for your application in dedicated table.
-
-> The package is one of three metadata packages based on the same approach:
-> - vkovic/laravel-meta (this package - general purpose meta storage)
-> - [vkovic/laravel-model-meta](https://github.com/vkovic/laravel-model-meta) (Laravel model related meta storage)
-> - [vkovic/laravel-settings](https://github.com/vkovic/laravel-settings) (app specific settings meta storage)
->
-> Packages can be used separately or together. Internally they are using same table and share common logic.
-
 ---
 
 ## Compatibility
@@ -30,67 +19,13 @@ Install the package via composer:
 composer require vkovic/laravel-meta
 ```
 
-The package needs to be registered in service providers, so just add it to providers array:
-
-```php
-// File: config/app.php
-
-// ...
-
-'providers' => [
-
-    /*
-     * Package Service Providers...
-     */
-
-    // ...
-
-    Vkovic\LaravelMeta\Providers\LaravelMetaServiceProvider::class,
-
-    // ...
-];
-```
-
 Run migrations to create table which will be used to store our metadata:
 
 ```bash
 php artisan migrate
 ```
 
-### With facade
-
-If you want to use facade (e.g. `Meta::set('foo', 'bar')`) for more intuitive coding, no problem, just register facade in app config file:
-
-```php
-// File: config/app.php
-
-// ...
-
-'aliases' => [
-
-    // ...
-
-    'Meta' => \Vkovic\LaravelMeta\Facades\MetaFacade::class,
-]
-```
-
-### Without facade
-
-If however you don't want to use facade you can still use this package with provided meta handler class.
-In this case you do not need to register facade but you need to include `MetaHandler` class.
-
-```php
-use Vkovic\LaravelMeta\MetaHandler;
-
-// ...
-
-$meta = new MetaHandler;
-$meta->set('foo', 'bar');
-```
-
-## Usage: Simple Examples
-
-In examples below we will use facade approach.
+## Usage
 
 Let's create and retrieve some metadata:
 
@@ -206,3 +141,22 @@ If, for some reason, we want to delete all meta at once, no problem:
 // This will delete all metadata from our meta table!
 Meta::purge();
 ```
+
+If we need to access underlying meta model (Laravel Eloquent Model) to manipulate or retrieve data with unlimited control we can get it like this:
+
+```php
+Meta::getModel();
+```
+
+---
+
+### Laravel meta storage for different purposes
+
+Easily store and access all kind of metadata for your application in dedicated table.
+
+> The package is one of three metadata packages based on the same approach:
+> - vkovic/laravel-meta (this package - general purpose meta storage)
+> - [vkovic/laravel-model-meta](https://github.com/vkovic/laravel-model-meta) (Laravel model related meta storage)
+> - [vkovic/laravel-settings](https://github.com/vkovic/laravel-settings) (app specific settings meta storage)
+>
+> Packages can be used separately or together. Internally they are using same table and share common logic.
