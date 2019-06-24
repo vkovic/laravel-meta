@@ -14,7 +14,7 @@ application in dedicated table.
 
 ## Compatibility
 
-The package is compatible with Laravel versions `>= 5.5`
+The package is compatible with Laravel versions `5.5`, `5.6`, `5.7` and `5.8`
 
 ## Installation
 
