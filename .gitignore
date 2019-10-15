@@ -12,6 +12,7 @@ ehthumbs.db
 *.log
 *.log*
 *.swp
+*.cache
 
 #
 # PhpStorm

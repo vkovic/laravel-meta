@@ -2,6 +2,7 @@
 
 namespace Vkovic\LaravelMeta\Test\Unit;
 
+use Illuminate\Support\Str;
 use Vkovic\LaravelMeta\Models\Meta;
 use Vkovic\LaravelMeta\Test\TestCase;
 
@@ -62,7 +63,7 @@ class MetaModelTest extends TestCase
 
         $meta = new Meta;
 
-        $meta->key = str_random(rand(129, 200));
+        $meta->key = Str::random(rand(129, 200));
     }
 
     /**
